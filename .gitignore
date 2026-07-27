@@ -1,17 +1,23 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .venv/
-
-# Kubernetes
-*.secret.yaml
+venv/
 
 # Docker
 *.log
 
 # Terraform
 .terraform/
-*.tfstate
+*.tfstate*
 
 # Helm
 *.tgz
+
+# VSCode
+.vscode/
+
+# Linux
+*.swp
