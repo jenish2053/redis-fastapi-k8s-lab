@@ -3,7 +3,7 @@ fastapi:
 
   image:
     repository: ghcr.io/jenish2053/redis-fastapi
-    tag: latest
+    tag: v2
 
   service:
     type: NodePort
