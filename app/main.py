@@ -4,15 +4,21 @@ import os
 
 app = FastAPI(title="Redis FastAPI Demo")
 
+
+# Redis configuration from Kubernetes environment variables
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+
 
 try:
     redis_client = redis.Redis(
         host=REDIS_HOST,
         port=REDIS_PORT,
+        password=REDIS_PASSWORD,
         decode_responses=True
     )
+
 except Exception:
     redis_client = None
 
@@ -29,10 +35,12 @@ def root():
 def health():
     try:
         redis_client.ping()
+
         return {
             "status": "healthy",
             "redis": "connected"
         }
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -44,9 +52,11 @@ def health():
 def set_value(key: str, value: str):
     try:
         redis_client.set(key, value)
+
         return {
             "message": f"Stored '{value}' with key '{key}'"
         }
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -77,4 +87,4 @@ def get_value(key: str):
         raise HTTPException(
             status_code=500,
             detail=str(e)
-            )
+        )

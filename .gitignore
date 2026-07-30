@@ -21,3 +21,9 @@ venv/
 
 # Linux
 *.swp
+
+# venv/
+app/venv/
+__pycache__/
+*.pyc
+.env
