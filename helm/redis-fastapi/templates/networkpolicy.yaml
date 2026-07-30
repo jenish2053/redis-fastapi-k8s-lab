@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+
+kind: NetworkPolicy
+
+metadata:
+
+  name: fastapi-to-redis
+
+
+spec:
+
+  podSelector:
+
+    matchLabels:
+
+      app: redis
+
+
+  policyTypes:
+
+  - Ingress
+
+
+  ingress:
+
+  - from:
+
+    - podSelector:
+
+        matchLabels:
+
+          app: fastapi
+
+
+    ports:
+
+    - protocol: TCP
+
+      port: 6379

@@ -2,8 +2,16 @@ apiVersion: v1
 kind: ConfigMap
 
 metadata:
-  name: fastapi-config
+
+  name: {{ include "redis-fastapi.fullname" . }}-config
+
+  labels:
+
+    {{- include "redis-fastapi.labels" . | nindent 4 }}
+
 
 data:
-  REDIS_HOST: redis-service
+
+  REDIS_HOST: {{ include "redis-fastapi.fullname" . }}-redis-service
+
   REDIS_PORT: "6379"

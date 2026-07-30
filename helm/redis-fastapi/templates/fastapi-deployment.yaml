@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: fastapi
+  name: {{ include "redis-fastapi.fullname" . }}-fastapi
+  labels:
+    {{- include "redis-fastapi.labels" . | nindent 4 }}
 
 spec:
-
   replicas: {{ .Values.fastapi.replicaCount }}
 
   selector:
@@ -17,8 +18,14 @@ spec:
     metadata:
       labels:
         app: fastapi
+        {{- include "redis-fastapi.labels" . | nindent 8 }}
 
     spec:
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
 
       containers:
 
@@ -26,46 +33,44 @@ spec:
 
         image: "{{ .Values.fastapi.image.repository }}:{{ .Values.fastapi.image.tag }}"
 
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
 
         ports:
 
         - containerPort: 8000
 
 
-        envFrom:
-
-        - configMapRef:
-            name: fastapi-config
-
-
         env:
 
         - name: REDIS_PASSWORD
-
           valueFrom:
-
             secretKeyRef:
-
-              name: redis-secret
-
+              name: {{ include "redis-fastapi.fullname" . }}-secret
               key: REDIS_PASSWORD
 
 
-        resources:
-
-          requests:
-
-            cpu: "100m"
-
-            memory: "128Mi"
+        - name: REDIS_HOST
+          value: {{ include "redis-fastapi.fullname" . }}-redis-service
 
 
-          limits:
+        livenessProbe:
 
-            cpu: "500m"
+          httpGet:
 
-            memory: "512Mi"
+            path: /health
+
+            port: 8000
+
+          initialDelaySeconds: 10
+
+          periodSeconds: 10
 
 
         readinessProbe:
@@ -81,14 +86,17 @@ spec:
           periodSeconds: 5
 
 
-        livenessProbe:
+        resources:
 
-          httpGet:
+          requests:
 
-            path: /health
+            cpu: {{ .Values.resources.requests.cpu }}
 
-            port: 8000
+            memory: {{ .Values.resources.requests.memory }}
 
-          initialDelaySeconds: 10
 
-          periodSeconds: 10
+          limits:
+
+            cpu: {{ .Values.resources.limits.cpu }}
+
+            memory: {{ .Values.resources.limits.memory }}

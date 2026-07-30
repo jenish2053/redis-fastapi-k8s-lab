@@ -2,57 +2,70 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: redis
+  name: {{ include "redis-fastapi.fullname" . }}-redis
+
+  labels:
+    {{- include "redis-fastapi.labels" . | nindent 4 }}
+
 
 spec:
-  replicas: 1
+
+  replicas: {{ .Values.redis.replicaCount }}
 
   selector:
     matchLabels:
       app: redis
 
+
   template:
+
     metadata:
+
       labels:
+
         app: redis
 
+        {{- include "redis-fastapi.labels" . | nindent 8 }}
+
+
     spec:
+
       containers:
 
       - name: redis
+
         image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
 
+
         ports:
+
         - containerPort: 6379
 
-        resources:
-          {{- toYaml .Values.resources | nindent 10 }}
 
-        livenessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
+        env:
 
-          initialDelaySeconds: 10
-          periodSeconds: 10
+        - name: REDIS_PASSWORD
 
-        readinessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
+          valueFrom:
 
-          initialDelaySeconds: 5
-          periodSeconds: 5
+            secretKeyRef:
+
+              name: {{ include "redis-fastapi.fullname" . }}-secret
+
+              key: REDIS_PASSWORD
+
 
         volumeMounts:
-        - name: redis-storage
+
+        - name: redis-data
+
           mountPath: /data
 
 
       volumes:
-      - name: redis-storage
+
+      - name: redis-data
 
         persistentVolumeClaim:
-          claimName: redis-pvc
+
+          claimName: {{ include "redis-fastapi.fullname" . }}-pvc

@@ -2,13 +2,23 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 
 metadata:
-  name: redis-pvc
+
+  name: {{ include "redis-fastapi.fullname" . }}-pvc
+
+  labels:
+
+    {{- include "redis-fastapi.labels" . | nindent 4 }}
+
 
 spec:
 
   accessModes:
+
   - ReadWriteOnce
 
+
   resources:
+
     requests:
+
       storage: {{ .Values.redis.persistence.size }}
